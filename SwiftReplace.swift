@@ -15,10 +15,14 @@ extension String {
         var splitStart = startIndex
         
         return matches.map { (match) -> (String, [String]) in
-            let split = String(self[splitStart ..< (index(startIndex, offsetBy: match.range.location))])
-            splitStart = index(splitStart, offsetBy: split.count + match.range.length)
-            return (split, (0 ..< match.numberOfRanges).map { String(self[Range(match.range(at: $0), in: self)!]) })
-        }.reduce("") { "\($0)\($1.0)\(collector($1.1))" } + self[index(startIndex, offsetBy: matches.last!.range.location + matches.last!.range.length) ..< endIndex]
+            let range = Range(match.range, in: self)!
+            let split = String(self[splitStart ..< range.lowerBound])
+            splitStart = range.upperBound
+            return (split, (0 ..< match.numberOfRanges)
+                .compactMap { Range(match.range(at: $0), in: self) }
+                .map { String(self[$0]) }
+            )
+        }.reduce("") { "\($0)\($1.0)\(collector($1.1))" } + self[Range(matches.last!.range, in: self)!.upperBound ..< endIndex]
     }
     func replace(_ regexPattern: String, options: NSRegularExpression.Options = [], collector: @escaping () -> String) -> String {
         return replace(regexPattern, options: options) { (_: [String]) in collector() }
