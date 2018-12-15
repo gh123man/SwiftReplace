@@ -10,10 +10,9 @@ import Foundation
 extension String {
     func replace(_ pattern: String, options: NSRegularExpression.Options = [], collector: ([String]) -> String) -> String {
         guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { return self }
-        let matches = regex.matches(in: self, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, count))
+        let matches = regex.matches(in: self, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, (self as NSString).length))
         guard matches.count > 0 else { return self }
         var splitStart = startIndex
-        
         return matches.map { (match) -> (String, [String]) in
             let range = Range(match.range, in: self)!
             let split = String(self[splitStart ..< range.lowerBound])
